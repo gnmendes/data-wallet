@@ -3,46 +3,54 @@ from datetime import datetime
 import base64
 
 
+class InputValidator:
+    @staticmethod
+    def validate_input(required_parameters, incoming_data):
+        for param in required_parameters:
+            if param not in incoming_data:
+                return False
+        return True
+
+
 class CreateFile:
     def __init__(self):
         self.file_name = 'some_text.txt'
+        self.required_fields = ['data', 'author']
 
     def write_file(self, data):
-        with open(self.file_name, 'w+') as file:
-            separate_lines = data.split('/n')
-            for line in separate_lines:
-                file.write(json.dumps(line))
-            file.close()
+        incoming_data = data.get_json()
+        if InputValidator.validate_input(required_parameters=self.required_fields, incoming_data=incoming_data):
+            with open(self.file_name, 'w+') as file:
+                file.write(json.dumps(incoming_data))
+                file.close()
 
 
 class CrateFileForArchive(CreateFile):
 
     def write_file(self, data):
-
-        for archive in data:
-            archive_name = data[archive].filename.split('.')[0] + '.txt'
+        receveid_files = data.files
+        for archive in receveid_files:
+            archive_name = receveid_files[archive].filename.split('.')[0] + '.txt'
             with open(archive_name, 'w+') as file:
                 file_info = {
-                    'file_name': data[archive].filename,
-                    'content_type': data[archive].content_type,
-                    'saved_date': str(datetime.utcnow().now())
+                    'file_name': receveid_files[archive].filename,
+                    'content_type': receveid_files[archive].content_type,
+                    'saved_date': datetime.utcnow().now().strftime('%d/%m/%y %H:%M:S')
                 }
                 try:
-                    file_info['file_data'] = base64.b64encode(data[archive].read()).decode('ascii')
+                    file_info['file_data'] = base64.b64encode(receveid_files[archive].read()).decode('ascii')
                 except Exception as e:
                     print(str(e))
-                file.write(json.dumps(file_info, sort_keys=True))
+                file.write(json.dumps(file_info))
             file.close()
 
 
 class CreateFileFactory:
-    __CONTENT_TYPES = {
-        'application/json': CreateFile,
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': CrateFileForArchive
-    }
 
-    def __init__(self, content_type):
-        self.content_type = content_type
-
-    def get_instance(self):
-        return self.__CONTENT_TYPES[self.content_type]
+    @staticmethod
+    def get_instance(content_type='other'):
+        __CONTENT_TYPES = {
+            'application/json': CreateFile,
+            'other': CrateFileForArchive
+        }
+        return __CONTENT_TYPES[content_type]()
