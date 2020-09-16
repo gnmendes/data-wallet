@@ -17,6 +17,11 @@ def list_files():
     return file_ops.get_files_list(), 200
 
 
+@app.route('/get_file', methods=['GET'])
+def retrieve_file():
+    return file_ops.get_file(filename=request.args.get('filename'))
+
+
 """
 Configurações para rodar local, sendo passiveis de serem omitidas
 """

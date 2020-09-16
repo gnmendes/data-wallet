@@ -13,6 +13,25 @@ class FileOperations:
     def get_files_list(self):
         return os.listdir('./{}'.format(self.files_dir))
 
+    def get_file(self, filename):
+        file_path = self.__files_pathfinder(filename=filename)
+        if file_path:
+            with open(file_path, 'r') as file:
+                content_file = file.read()
+                data_to_be_retrieved = []
+                for lines in content_file:
+                    data_to_be_retrieved.append(lines)
+                file.close()
+                return json.dumps(data_to_be_retrieved)
+        return None
+
+    def __files_pathfinder(self, filename):
+        for root, dirs, files in os.walk('./{}'.format(self.files_dir)):
+            for name in files:
+                if name == filename:
+                    return os.path.abspath(os.path.join(root, name))
+        return None
+
 
 class CreateFile(FileOperations):
     def __init__(self):
