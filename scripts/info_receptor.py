@@ -9,17 +9,17 @@ file_ops = FileOperations()
 def receive_info():
     create_file = CreateFileFactory.get_instance(content_type=request.content_type)
     create_file.write_file(data=request)
-    return 'If everything had gone right and nothing gone wrong, this worked!', 200
+    return 'If everything had gone right and nothing gone wrong, this worked!', 201
 
 
-@app.route('/list_files', method=['GET'])
+@app.route('/list_files')
 def list_files():
     return file_ops.get_files_list(), 200
 
 
-@app.route('/get_file', methods=['GET'])
-def retrieve_file():
-    return file_ops.get_file(filename=request.args.get('filename'))
+@app.route('/<file_name>')
+def retrieve_file(file_name):
+    return file_ops.get_file(filename=file_name), 200
 
 
 """
