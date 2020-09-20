@@ -1,5 +1,5 @@
 from flask import Flask, request
-from scripts.create_file import CreateFileFactory, FileOperations
+from scripts.archive_operations import CreateFileFactory, FileOperations
 
 app = Flask(__name__)
 file_ops = FileOperations()
@@ -19,7 +19,7 @@ def list_files():
 
 @app.route('/<file_name>')
 def retrieve_file(file_name):
-    return file_ops.get_file(filename=file_name), 200
+    return file_ops.get_single_file(filename=file_name), 200
 
 
 """
