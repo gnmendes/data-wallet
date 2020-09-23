@@ -1,5 +1,6 @@
 from hashlib import sha256
 import time
+import json
 
 
 class Block:
@@ -13,16 +14,11 @@ class Block:
 
     @property
     def calculate_hash(self):
-        block_of_string = "{}, {}, {}, {}, {}".format(self.index, self.proof_no,
-                                                      self.prev_hash, self.data,
-                                                      self.timestamp)
-
-        return sha256(block_of_string.encode()).hexdigest()
+        data_encoded = json.dumps(self.__dict__).encode()
+        return sha256(data_encoded).hexdigest()
 
     def __repr__(self):
-        return "{} - {} - {} - {} - {}".format(self.index, self.proof_no,
-                                               self.prev_hash, self.data,
-                                               self.timestamp)
+        return json.dumps(self.__dict__, sort_keys=True)
 
 
 class BlockChain:
