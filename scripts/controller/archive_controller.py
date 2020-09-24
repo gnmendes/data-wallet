@@ -24,7 +24,10 @@ def retrieve_file(file_name):
 
 """
 Configurações para rodar local, sendo passiveis de serem omitidas
+
+**Non transactional values are inputted through those endpoints**
 """
+
 
 if __name__ == '__main__':
     app.run(debug=True, port=8080)
