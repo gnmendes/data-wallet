@@ -3,11 +3,24 @@ import os.path
 import json
 import base64
 from datetime import datetime
-from scripts.util.utilities import InputValidator, Util
+from scripts.common.utilities import InputValidator, Util
 
 
 # TODO: ver como poe senha nos arquivos
 # TODO: ver como faz para tornar isso daqui em executavel
+
+class DirectoryOperations:
+
+    @staticmethod
+    def dir_exists(path, create_if_doesnt=None):
+        if not create_if_doesnt:
+            return os.path.exists(path)
+        else:
+            return True if os.path.exists(path) else DirectoryOperations.create_dir(path=path)
+
+    @staticmethod
+    def create_dir(path):
+        return os.makedirs(path, exist_ok=True)
 
 
 class FileOperations:
@@ -21,7 +34,7 @@ class FileOperations:
 
     def get_files_list(self):
         path = f'{os.getcwd()}/{self.files_dir}'
-        if FileOperations.dir_exists(path=path):
+        if DirectoryOperations.dir_exists(path=path):
             return {'files_founded': os.listdir(path)}
         return {'error': 'Não existem arquivos a serem listados!'}
 
@@ -46,33 +59,22 @@ class FileOperations:
                     paths.append(os.path.abspath(os.path.join(root, name)))
         return paths
 
-    @staticmethod
-    def dir_exists(path, create_if_doesnt=None):
-        if not create_if_doesnt:
-            return os.path.exists(path)
-        else:
-            return True if os.path.exists(path) else FileOperations.create_dir(path=path)
 
-    @staticmethod
-    def create_dir(path):
-        return os.makedirs(path, exist_ok=True)
-
-
-class CreateFileForJSON(FileOperations):
+class CreateFileForJSON:
     """
         Classe responsável por salvar os em arquivos o body recebido nas requsições
         cujo o tipo do conteúdo é JSON
     """
 
     def __init__(self):
-        super().__init__()
+        self.files_dir = 'files'
         self.sub_dir = 'json_storage'
         self.file_name = 'stored_json_data.txt'
         self.required_fields = ['data', 'author']
 
     def write_file(self, data):
-        FileOperations.dir_exists(path='{}/{}/{}'.format(os.getcwd(), self.files_dir, self.sub_dir),
-                                  create_if_doesnt=True)
+        DirectoryOperations.dir_exists(path='{}/{}/{}'.format(os.getcwd(), self.files_dir, self.sub_dir),
+                                       create_if_doesnt=True)
         incoming_data = data.get_json()
         if InputValidator.validate_input(required_parameters=self.required_fields, incoming_data=incoming_data):
             with open('{}/{}/{}'.format(self.files_dir, self.sub_dir, self.file_name), 'a') as file:
@@ -80,13 +82,13 @@ class CreateFileForJSON(FileOperations):
                 file.close()
 
 
-class CrateFileForArchive(FileOperations):
+class CrateFileForArchive(CreateFileForJSON):
 
     def write_file(self, data):
         received_files = data.files.to_dict(flat=False)['archive']
         for archive in received_files:
             archive_name = archive.filename.split('.')[0] + '.txt'
-            FileOperations.dir_exists(path='{}/{}'.format(os.getcwd(), self.files_dir), create_if_doesnt=True)
+            DirectoryOperations.dir_exists(path='{}/{}'.format(os.getcwd(), self.files_dir), create_if_doesnt=True)
             file_path = '{}/{}'.format('files', archive_name)
 
             with open(file_path, 'w+') as file:
