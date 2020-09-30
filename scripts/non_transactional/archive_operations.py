@@ -55,7 +55,7 @@ class FileOperations:
         paths = []
         for root, dirs, files in os.walk('./{}'.format(self.files_dir)):
             for name in files:
-                if Util.anything_after_matches(search_for=filename, name=name):
+                if Util.anything_after_str_matches(search_for=filename, name=name):
                     paths.append(os.path.abspath(os.path.join(root, name)))
         return paths
 
