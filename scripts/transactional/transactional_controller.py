@@ -1,7 +1,7 @@
-from flask import Flask, request
+from flask import Flask, request, jsonify
 
 from scripts.common.utilities import CPFValidator, InputValidator
-from .something import TransactionalData
+from .data_handler import TransactionalData
 
 app = Flask(__name__)
 
@@ -11,7 +11,8 @@ def create_something():
     body = request.get_json()
     InputValidator.validate_input(required_parameters=['cpf'], incoming_data=request.get_json())
     CPFValidator.is_cpf_valid(cpf=body['cpf'])
-    # bc = BlockChain()
+    # transact = TransactionalData()
+
 
     return None
 
@@ -21,4 +22,4 @@ def define_required_field():
     transact = TransactionalData()
     transact.register_required_fields(fields=request.get_json())
 
-    return 'If everything gone right and nothings gone wrong, so it worked', 201
+    return jsonify('If everything gone right and nothings gone wrong, so it worked'), 201
