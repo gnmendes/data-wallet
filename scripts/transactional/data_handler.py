@@ -37,7 +37,7 @@ class TransactionalData:
         :param data: traz o registro a ser inserido
         :return: None por hora
         '''
-        return None
+        pass
 
 # TODO: REFACTOR TOTAL NO NOME DAS CLASSES
 # TODO: DEIXAR O PROCESSO MAIS MADURO
