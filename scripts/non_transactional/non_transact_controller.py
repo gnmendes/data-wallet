@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-from scripts.non_transactional.archive_operations import CreateFileFactory, FileOperations
+from ..non_transactional.archive_operations import CreateFileFactory, FileOperations
 
 app = Flask(__name__)
 file_ops = FileOperations()
