@@ -57,12 +57,13 @@ class Blockchain:
     def proof_of_work(self, last_proof):
         proof = 0
         while not self.valid_proof(last_proof=last_proof, proof=proof):
-            proof = random.randint(1, 1999)
+            proof = random.randint(1, 9999999)
+        return proof
 
     @staticmethod
     def valid_proof(last_proof, proof):
         guess_hash = '%d%d' % last_proof, proof
-        return sha256(guess_hash).hexdigest()[:-1] == '7'
+        return sha256(guess_hash).hexdigest()[:-1] == '00'
 
     @property
     def get_last_block(self):
