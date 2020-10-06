@@ -50,9 +50,8 @@ def new_transactions():
     response = {'message': 'Não foi possível identificar todos os atributos obrigatórios!'}
 
     if _is_valid(required=['sender', 'recipient', 'data'], data=register) \
-            and _is_valid(data=register['data'], required=['cpf'])\
+            and _is_valid(data=register['data'], required=['cpf']) \
             and CPFValidator.is_cpf_valid(cpf=register['cpf']):
-
         index = bc.add_new_transaction(sender=register['sender'], recipient=register['recipient'],
                                        data=register['data'])
         response = {'message': f'Transação não confirmada adicionada! índice {index}'}
@@ -65,9 +64,39 @@ def obtain_the_whole_chain():
     response = {'chain': bc.chain, 'length': len(bc.chain)}
     return jsonify(response), 200
 
+
+@app.route('/nodes/register', methods=['POST'])
+def register_nodes():
+    nodes = request.get_json()['nodes']
+
+    if not nodes:
+        return 'Nenhum nó submetido!'
+
+    for node in nodes:
+        bc.register_nodes(node)
+
+    response = {
+        'mensagem': 'Sucesso! Novos nós foram registrados',
+        'nodes': bc.nodes
+    }
+
+    return jsonify(response), 201
+
+
+@app.route('/nodes/resolve')
+def consensus():
+    replaced = bc.resolve_conflicts()
+    response = {'message': 'Our chain is authoritative',
+                'chain': bc.chain}
+    if replaced:
+        response['message'] = 'Our chain was replaced'
+    return jsonify(response), 200
+
 '''
 Daqui pra baixo são endpoints relacionados aos dados não transacionaveis
 '''
+
+
 @app.route('/insert_document', methods=['POST'])
 def receive_info():
     create_file = CreateFileFactory.get_instance(content_type=request.content_type)
@@ -91,8 +120,6 @@ Configurações para rodar local, sendo passiveis de serem omitidas
 **Non transactional values are inputted through those endpoints**
 """
 
-
 if __name__ == '__main__':
     app.run(debug=True, port=8080)
 
-# TODO: TRAZER TODOS OS ENDPOINTS PRA ESSE ARQUIVO
