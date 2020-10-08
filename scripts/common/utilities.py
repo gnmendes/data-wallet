@@ -27,24 +27,29 @@ class CPFValidator:
     @staticmethod
     def is_cpf_valid(cpf):
         CPFValidator.is_valid_cpf_length(cpf=cpf)
-        first_nine_sum = CPFValidator.__sum_first_n_digits(cpf=cpf, number_of_digits=10)
-        CPFValidator.validate_verifier_digit(sum_of_digits=first_nine_sum, verifier_digit=cpf[10:11])
-        first_ten_sum = CPFValidator.__sum_first_n_digits(cpf=cpf, number_of_digits=11)
+        first_nine_sum = CPFValidator.__sum_first_n_digits(cpf=cpf, number_of_digits=9)
+        CPFValidator.validate_verifier_digit(sum_of_digits=first_nine_sum, verifier_digit=cpf[9:10])
+        first_ten_sum = CPFValidator.__sum_first_n_digits(cpf=cpf, number_of_digits=10)
         CPFValidator.validate_verifier_digit(sum_of_digits=first_ten_sum, verifier_digit=cpf[-1])
+        return True
 
     @staticmethod
     def validate_verifier_digit(sum_of_digits, verifier_digit):
         remain = CPFValidator.get_rest(sum=sum_of_digits)
-        assert remain == verifier_digit
+        assert remain == int(verifier_digit)
 
     @staticmethod
     def get_rest(sum):
-        return (sum * 10) % 11
+        rem = sum % 11
+        if rem < 2:
+            return 0
+
+        return 11 - rem
 
     @staticmethod
     def __sum_first_n_digits(cpf, number_of_digits):
         sum_first_digits = 0
-        sequence_desc = number_of_digits
+        sequence_desc = number_of_digits + 1
         for digits in cpf[:number_of_digits]:
             sum_first_digits += int(digits) * sequence_desc
             sequence_desc -= 1

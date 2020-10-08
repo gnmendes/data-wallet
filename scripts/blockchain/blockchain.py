@@ -18,15 +18,7 @@ class Block:
     @property
     def get_hash(self):
         repr_encoded = json.dumps(self.__dict__, sort_keys=True).encode()
-        return sha256(repr_encoded)
-
-
-class Transaction:
-
-    def __init__(self, sender, recipient, data):
-        self.sender = sender
-        self.recipient = recipient
-        self.data = data
+        return sha256(repr_encoded).hexdigest()
 
 
 class Blockchain:
@@ -87,11 +79,12 @@ class Blockchain:
         self.current_transactions = []
 
     def add_new_transaction(self, sender, recipient, data):
-        self.current_transactions.append(
-            Transaction(sender=sender,
-                        recipient=recipient,
-                        data=data))
-        return self.get_last_block['index'] + 1
+        self.current_transactions.append({
+            'sender': sender,
+            'recipient': recipient,
+            'data': data
+        })
+        return self.get_last_block.index + 1
 
     def proof_of_work(self, last_proof):
         proof = 0
@@ -101,9 +94,16 @@ class Blockchain:
 
     @staticmethod
     def valid_proof(last_proof, proof):
-        guess_hash = '%d%d' % last_proof, proof
-        return sha256(guess_hash).hexdigest()[:-1] == '00'
+        proofs = '%d%d' % (last_proof, proof)
+        guess_hash = sha256(proofs.encode()).hexdigest()
+        return guess_hash[len(guess_hash)-2:] == '00'
 
     @property
     def get_last_block(self):
         return self.chain[-1]
+
+    def __repr__(self):
+        repr = []
+        for block in self.chain:
+            repr.append(block.__dict__)
+        return repr

@@ -1,8 +1,8 @@
 from uuid import uuid4
 from flask import Flask, request, jsonify
-from .blockchain.blockchain import Blockchain
-from .common.utilities import InputValidator, CPFValidator
-from .non_transactional.archive_operations import CreateFileFactory, FileOperations
+from scripts.blockchain.blockchain import Blockchain
+from scripts.common.utilities import InputValidator, CPFValidator
+from scripts.non_transactional.archive_operations import CreateFileFactory, FileOperations
 
 app = Flask(__name__)
 bc = Blockchain()
@@ -18,7 +18,7 @@ def _is_valid(required, data):
 @app.route('/mine', methods=['GET'])
 def mine():
     last_block = bc.get_last_block
-    last_proof = last_block['proof']
+    last_proof = last_block.proof
     proof_mined = bc.proof_of_work(last_proof=last_proof)
     bc.add_new_transaction(sender='0', recipient=node_identifier,
                            data={'success': 'You mined a new proof and for this'
@@ -27,10 +27,10 @@ def mine():
     block = bc.add_new_block(proof=proof_mined, previous_hash=previous_hash)
     response = {
         'message': 'New block forged!',
-        'index': block['index'],
-        'transactions': block['transactions'],
-        'proof': block['proof'],
-        'previousHash': block['previous_hash']
+        'index': block.index,
+        'transactions': block.transactions,
+        'proof': block.proof,
+        'previousHash': str(block.previous_hash)
     }
 
     return jsonify(response), 200
@@ -50,18 +50,19 @@ def new_transactions():
     response = {'message': 'Não foi possível identificar todos os atributos obrigatórios!'}
 
     if _is_valid(required=['sender', 'recipient', 'data'], data=register) \
-            and _is_valid(data=register['data'], required=['cpf']) \
-            and CPFValidator.is_cpf_valid(cpf=register['cpf']):
-        index = bc.add_new_transaction(sender=register['sender'], recipient=register['recipient'],
-                                       data=register['data'])
-        response = {'message': f'Transação não confirmada adicionada! índice {index}'}
-        return jsonify(response), 201
+            and _is_valid(data=register['data'], required=['cpf']):
+
+        if CPFValidator.is_cpf_valid(cpf=register['data']['cpf']):
+            index = bc.add_new_transaction(sender=register['sender'], recipient=register['recipient'],
+                                           data=register['data'])
+            response = {'message': f'Transação não confirmada adicionada! índice {index}'}
+            return jsonify(response), 201
     return jsonify(response), 400
 
 
 @app.route('/chain', methods=['GET'])
 def obtain_the_whole_chain():
-    response = {'chain': bc.chain, 'length': len(bc.chain)}
+    response = {'chain': bc.__repr__(), 'length': len(bc.chain)}
     return jsonify(response), 200
 
 
@@ -87,7 +88,7 @@ def register_nodes():
 def consensus():
     replaced = bc.resolve_conflicts()
     response = {'message': 'Our chain is authoritative',
-                'chain': bc.chain}
+                'chain': bc.__repr__()}
     if replaced:
         response['message'] = 'Our chain was replaced'
     return jsonify(response), 200
