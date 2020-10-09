@@ -70,8 +70,8 @@ class Blockchain:
                       timestamp=time(),
                       transactions=self.current_transactions,
                       proof=proof,
-                      previous_hash=previous_hash or self.get_last_block.get_hash)
-        
+                      previous_hash=previous_hash)
+
         self.__clear_transactions()
         self.chain.append(block)
         return block
