@@ -1,27 +1,50 @@
 from uuid import uuid4
 from flask import Flask, request, jsonify
 from scripts.blockchain.blockchain import Blockchain
+from scripts.non_transactional.non_transact_ops import FileOps
 from scripts.common.utilities import InputValidator, CPFValidator
-from scripts.non_transactional.archive_operations import CreateFileFactory, FileOperations
+from scripts.transactional.transact_ops import TransactionalOps
 
 app = Flask(__name__)
 bc = Blockchain()
-file_ops = FileOperations()
+arch_ops = FileOps()
 node_identifier = str(uuid4()).replace('-', '.')
+transact = TransactionalOps()
 
 
 def _is_valid(required, data):
     return InputValidator.validate_input(required_parameters=required, incoming_data=data)
 
 
-# PASSO 2:
+@app.route('/conta/creditar', methods=['POST'])
+def creditar():
+    valor = request.get_json()['valor']
+    return jsonify(transact.creditar_ou_debitar_valor(valor=valor, op='C')), 200
+
+
+@app.route('/conta/debitar', methods=['POST'])
+def debitar():
+    valor = request.get_json()['valor']
+    saldo = transact.consultar_saldo()['saldo']
+
+    if valor and saldo and saldo - float(valor) > 0:
+        return jsonify(transact.creditar_ou_debitar_valor(valor=valor, op='D')), 200
+    return jsonify({'error': 'O débito negativaria a conta, por isso não foi possível completar '
+                             'a operação!'}), 400
+
+
+@app.route('/conta/saldo', methods=['GET'])
+def consultar():
+    return jsonify(transact.consultar_saldo())
+
+
 @app.route('/mine', methods=['GET'])
 def mine():
     last_block = bc.get_last_block
     last_proof = last_block.proof
     proof_mined = bc.proof_of_work(last_proof=last_proof)
     bc.add_new_transaction(sender='0', recipient=node_identifier,
-                           data={'success': 'You mined a new proof and for this'
+                           data={'success': 'You mined a new proof and for this '
                                             'your registry are being adding to the chain!'})
     previous_hash = last_block.get_hash
     block = bc.add_new_block(proof=proof_mined, previous_hash=previous_hash)
@@ -43,7 +66,6 @@ def mine():
 '''
 
 
-# PASSO 1:
 @app.route('/transactions/new', methods=['POST'])
 def new_transactions():
     register = request.get_json()
@@ -93,26 +115,31 @@ def consensus():
         response['message'] = 'Our chain was replaced'
     return jsonify(response), 200
 
+
 '''
 Daqui pra baixo são endpoints relacionados aos dados não transacionaveis
 '''
 
 
-@app.route('/insert_document', methods=['POST'])
+@app.route('/arquivo/inserir', methods=['POST'])
 def receive_info():
-    create_file = CreateFileFactory.get_instance(content_type=request.content_type)
-    create_file.write_file(data=request)
-    return jsonify('If everything had gone right and nothing gone wrong, this worked!'), 201
+    rows_inserted = arch_ops.insert_new_files(files=request)
+    status = rows_inserted['error'] if 'error' in rows_inserted else 201
+    return jsonify(rows_inserted), status
 
 
-@app.route('/list_documents')
+@app.route('/arquivo/listar')
 def list_files():
-    return jsonify(file_ops.get_files_list()), 200
+    archive = arch_ops.get_files()
+    status = archive['error'] if 'error' in archive else 200
+    return jsonify(archive), status
 
 
-@app.route('/<file_name>')
-def retrieve_file(file_name):
-    return jsonify(file_ops.get_single_file(filename=file_name)), 200
+@app.route('/arquivo/<id_archive>')
+def retrieve_file(id_archive):
+    result = arch_ops.get_file_by_id(id_file=id_archive)
+    status = result['error'] if 'error' in result else 200
+    return jsonify(result), status
 
 
 """
@@ -123,4 +150,3 @@ Configurações para rodar local, sendo passiveis de serem omitidas
 
 if __name__ == '__main__':
     app.run(debug=True, port=8080)
-

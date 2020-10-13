@@ -1,5 +1,3 @@
-import re
-
 
 class InputValidator:
     @staticmethod
@@ -13,30 +11,29 @@ class InputValidator:
 class Util:
 
     @staticmethod
-    def anything_after_str_matches(search_for, name):
-        pattern = Util.get_pattern(search_for=search_for)
-        return re.match(pattern, name)
-
-    @staticmethod
-    def get_pattern(search_for):
-        return re.compile('{}.*'.format(search_for))
+    def produces_error_object(err):
+        assert err
+        return {'error': 500, 'errorMessage': str(err)}
 
 
 class CPFValidator:
 
     @staticmethod
     def is_cpf_valid(cpf):
-        CPFValidator.is_valid_cpf_length(cpf=cpf)
+        if not CPFValidator.is_valid_cpf_length(cpf=cpf):
+            return False
         first_nine_sum = CPFValidator.__sum_first_n_digits(cpf=cpf, number_of_digits=9)
-        CPFValidator.validate_verifier_digit(sum_of_digits=first_nine_sum, verifier_digit=cpf[9:10])
+        if not CPFValidator.validate_verifier_digit(sum_of_digits=first_nine_sum, verifier_digit=cpf[9:10]):
+            return False
         first_ten_sum = CPFValidator.__sum_first_n_digits(cpf=cpf, number_of_digits=10)
-        CPFValidator.validate_verifier_digit(sum_of_digits=first_ten_sum, verifier_digit=cpf[-1])
+        if not CPFValidator.validate_verifier_digit(sum_of_digits=first_ten_sum, verifier_digit=cpf[-1]):
+            return False
         return True
 
     @staticmethod
     def validate_verifier_digit(sum_of_digits, verifier_digit):
         remain = CPFValidator.get_rest(sum=sum_of_digits)
-        assert remain == int(verifier_digit)
+        return remain == int(verifier_digit)
 
     @staticmethod
     def get_rest(sum):
@@ -57,4 +54,4 @@ class CPFValidator:
 
     @staticmethod
     def is_valid_cpf_length(cpf):
-        assert len(cpf) == 11
+        return len(cpf) == 11
