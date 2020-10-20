@@ -10,7 +10,8 @@ class SQLStatements(enum.Enum):
                                  'ID_ARQUIVO INTEGER PRIMARY KEY,' \
                                  'NOME_ARQUIVO TEXT NOT NULL,' \
                                  'TIPO_CONTEUDO TEXT NOT NULL,' \
-                                 'CORPO BLOB NOT NULL)'
+                                 'CORPO BLOB NOT NULL,' \
+                                 'DT_INSERCAO TIMESTAMP DEFAULT CURRENT_TIMESTAMP )'
 
     BUSCAR_ARQUIVOS = 'SELECT * FROM TB_ARQUIVOS_INFO'
 
@@ -94,7 +95,8 @@ class FileOps:
                 'idArquivo': register[0],
                 'nomeArquivo': register[1],
                 'contentType': register[2],
-                'corpo': base64.b64encode(register[3]).decode('utf-8')
+                'corpo': base64.b64encode(register[3]).decode('utf-8'),
+                'dataInsercao': register[4]
             }
             json_acceptable.append(valid_body)
         return json_acceptable

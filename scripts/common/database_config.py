@@ -1,5 +1,8 @@
+import os
 import sqlite3
 import threading
+from dotenv import load_dotenv
+load_dotenv()
 
 
 class DBConfig:
@@ -17,7 +20,8 @@ class DBConfig:
         if DBConfig.__connection is not None:
             raise Exception('Its a Singleton Class')
         else:
-            DBConfig.__connection = sqlite3.connect('data-wallet.db', check_same_thread=False)
+            db_name = os.environ.get('DATABASE_TEST_NAME') or os.environ.get('DATABASE_NAME')
+            DBConfig.__connection = sqlite3.connect(db_name, check_same_thread=False)
 
     @staticmethod
     def close_cursor(cursor):

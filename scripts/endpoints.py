@@ -2,14 +2,14 @@ from uuid import uuid4
 from flask import Flask, request, jsonify
 from scripts.blockchain.blockchain import Blockchain
 from scripts.non_transactional.non_transact_ops import FileOps
-from scripts.common.utilities import InputValidator, CPFValidator
 from scripts.transactional.transact_ops import TransactionalOps
+from scripts.common.utilities import InputValidator, CPFValidator
+
 
 app = Flask(__name__)
 bc = Blockchain()
 arch_ops = FileOps()
 node_identifier = str(uuid4()).replace('-', '.')
-transact = TransactionalOps()
 
 
 def _is_valid(required, data):
@@ -19,26 +19,26 @@ def _is_valid(required, data):
 @app.route('/conta/creditar', methods=['POST'])
 def creditar():
     valor = request.get_json()['valor']
-    return jsonify(transact.creditar_ou_debitar_valor(valor=valor, op='C')), 200
+    return jsonify(TransactionalOps.creditar_ou_debitar_valor(valor=valor, op='C')), 200
 
 
-@app.route('/conta/debitar', methods=['POST'])
+@app.route('/conta/debitar', methods=['DELETE'])
 def debitar():
     valor = request.get_json()['valor']
-    saldo = transact.consultar_saldo()['saldo']
+    saldo = TransactionalOps.consultar_saldo()['saldo']
 
     if valor and saldo and saldo - float(valor) > 0:
-        return jsonify(transact.creditar_ou_debitar_valor(valor=valor, op='D')), 200
+        return jsonify(TransactionalOps.creditar_ou_debitar_valor(valor=valor, op='D')), 200
     return jsonify({'error': 'O débito negativaria a conta, por isso não foi possível completar '
                              'a operação!'}), 400
 
 
 @app.route('/conta/saldo', methods=['GET'])
 def consultar():
-    return jsonify(transact.consultar_saldo())
+    return jsonify(TransactionalOps.consultar_saldo())
 
 
-@app.route('/mine', methods=['GET'])
+@app.route('/chain/mine', methods=['GET'])
 def mine():
     last_block = bc.get_last_block
     last_proof = last_block.proof
@@ -66,7 +66,7 @@ def mine():
 '''
 
 
-@app.route('/transactions/new', methods=['POST'])
+@app.route('/chain/transactions/new', methods=['POST'])
 def new_transactions():
     register = request.get_json()
     response = {'message': 'Não foi possível identificar todos os atributos obrigatórios!'}
@@ -82,7 +82,7 @@ def new_transactions():
     return jsonify(response), 400
 
 
-@app.route('/chain', methods=['GET'])
+@app.route('/chain/representation', methods=['GET'])
 def obtain_the_whole_chain():
     response = {'chain': bc.__repr__(), 'length': len(bc.chain)}
     return jsonify(response), 200

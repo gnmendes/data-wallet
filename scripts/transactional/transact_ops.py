@@ -23,7 +23,8 @@ class TransactionalOps:
         cursor.execute(SQLStatements.CREATE_TABLE.value)
         DBConfig.close_cursor(cursor=cursor)
 
-    def creditar_ou_debitar_valor(self, valor, op):
+    @staticmethod
+    def creditar_ou_debitar_valor(valor, op):
 
         if float(valor) > 0 and op in ['C', 'D']:
             cursor = None
@@ -39,7 +40,8 @@ class TransactionalOps:
             finally:
                 DBConfig.close_cursor(cursor=cursor)
 
-    def consultar_saldo(self):
+    @staticmethod
+    def consultar_saldo():
         cursor = None
         try:
             connection = DBConfig.get_instance()
