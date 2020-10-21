@@ -15,7 +15,7 @@ class SQLStatements(enum.Enum):
 
     BUSCAR_ARQUIVOS = 'SELECT * FROM TB_ARQUIVOS_INFO'
 
-    BUSCAR_ARQUIVO_POR_ID = 'SELECT * FROM TB_ARQUIVOS_INFO WHERE ID_ARQUIVO = ?'
+    BUSCAR_ARQUIVO_POR_ID = 'SELECT * FROM TB_ARQUIVOS_INFO WHERE ID_ARQUIVO IN (?)'
 
     INSERIR_ARQUIVO = 'INSERT INTO TB_ARQUIVOS_INFO (NOME_ARQUIVO,' \
                       'TIPO_CONTEUDO,' \
@@ -24,6 +24,8 @@ class SQLStatements(enum.Enum):
                       '(?,' \
                       '?,' \
                       ' ?)'
+
+    DELETAR_ARQUIVOS_POR_ID = 'DELETE FROM TB_ARQUIVOS_INFO WHERE ID_ARQUIVO IN (?)'
 
 
 class FileOps:
@@ -77,6 +79,24 @@ class FileOps:
             cursor.execute(SQLStatements.BUSCAR_ARQUIVO_POR_ID.value, id_file)
             registers = list(cursor.fetchall())
             return self.__make_json_serializable(registers=registers)
+        except Exception as error:
+            print(str(error))
+            return Util.produces_error_object(err=error)
+        finally:
+            DBConfig.close_cursor(cursor=cursor)
+
+    def remove_files(self, ids):
+        cursor = None
+
+
+        try:
+            arquivos_excluidos = self.get_file_by_id(id_file=ids)
+            if 'error' not in arquivos_excluidos:
+                connection = DBConfig.get_instance()
+                cursor = connection.cursor()
+                cursor.execute(SQLStatements.DELETAR_ARQUIVOS_POR_ID, ids)
+                connection.commit()
+            return arquivos_excluidos
         except Exception as error:
             print(str(error))
             return Util.produces_error_object(err=error)

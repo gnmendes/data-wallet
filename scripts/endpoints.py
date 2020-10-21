@@ -5,7 +5,6 @@ from scripts.non_transactional.non_transact_ops import FileOps
 from scripts.transactional.transact_ops import TransactionalOps
 from scripts.common.utilities import InputValidator, CPFValidator
 
-
 app = Flask(__name__)
 bc = Blockchain()
 arch_ops = FileOps()
@@ -14,6 +13,10 @@ node_identifier = str(uuid4()).replace('-', '.')
 
 def _is_valid(required, data):
     return InputValidator.validate_input(required_parameters=required, incoming_data=data)
+
+
+def get_status(body, status_when_ok=200):
+    return body['error'] if 'error' in body else status_when_ok
 
 
 @app.route('/conta/creditar', methods=['POST'])
@@ -124,22 +127,28 @@ Daqui pra baixo são endpoints relacionados aos dados não transacionaveis
 @app.route('/arquivo/inserir', methods=['POST'])
 def receive_info():
     rows_inserted = arch_ops.insert_new_files(files=request)
-    status = rows_inserted['error'] if 'error' in rows_inserted else 201
-    return jsonify(rows_inserted), status
+    return jsonify(rows_inserted), get_status(body=rows_inserted, status_when_ok=201)
 
 
 @app.route('/arquivo/listar')
 def list_files():
     archive = arch_ops.get_files()
-    status = archive['error'] if 'error' in archive else 200
-    return jsonify(archive), status
+    return jsonify(archive), get_status(body=archive)
 
 
 @app.route('/arquivo/<id_archive>')
 def retrieve_file(id_archive):
     result = arch_ops.get_file_by_id(id_file=id_archive)
-    status = result['error'] if 'error' in result else 200
-    return jsonify(result), status
+    return jsonify(result), get_status(body=result)
+
+
+@app.route('/arquivo/remove', methods=['DELETE'])
+def remove_archive():
+    ids = request.get_json()
+    if ids:
+        body = arch_ops.remove_files(ids=ids)
+        return jsonify(body), get_status(body=body)
+    return jsonify({'error': 'Solicitação de exclusão não inclui ids'}), 400
 
 
 """
