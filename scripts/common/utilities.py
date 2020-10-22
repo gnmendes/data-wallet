@@ -15,6 +15,13 @@ class Util:
         assert err
         return {'error': 500, 'errorMessage': str(err)}
 
+    @staticmethod
+    def question_marks_for_items(n):
+        str = '('
+        for indx in range(0, n):
+            str += '?,'
+        return str[:-1] + ')'
+
 
 class CPFValidator:
 

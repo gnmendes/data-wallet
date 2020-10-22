@@ -144,7 +144,7 @@ def retrieve_file(id_archive):
 
 @app.route('/arquivo/remove', methods=['DELETE'])
 def remove_archive():
-    ids = request.get_json()
+    ids = request.get_json()['ids']
     if ids:
         body = arch_ops.remove_files(ids=ids)
         return jsonify(body), get_status(body=body)

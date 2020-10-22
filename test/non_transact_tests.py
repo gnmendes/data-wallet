@@ -30,6 +30,14 @@ class NonTransactTestCases(unittest.TestCase):
         self.assertEqual(response.json[-1]['nomeArquivo'], 'mock-file.json', 'O nome do último arquivo inserido'
                                                                              'deve coincidir')
 
+    def teste_deve_excluir_primeiro_arquivo(self) -> None:
+        response = self.app_client.delete('/arquivo/remove',
+                                          data=json.dumps({'ids': [1]}),
+                                          headers={'Content-Type': 'application/json'})
+        self.assertEqual(200, response.status_code, 'O arquivo de deve ter sido excluido')
+        self.assertEqual(response.json[0]['nomeArquivo'], 'mock-file.json', 'O nome do arquivo excluido deve coincidir')
+        self.assertEqual(response.json[0]['idArquivo'], 1, 'O id do arquivo excluido deve coincidir')
+
     @staticmethod
     def __get_archive_mock():
         return {'archive': (io.BytesIO(json.dumps({'nome': 'Gabriel', 'idade': 21})
