@@ -27,13 +27,14 @@ class CPFValidator:
 
     @staticmethod
     def is_cpf_valid(cpf):
-        if not CPFValidator.is_valid_cpf_length(cpf=cpf):
+        cpf_as_text = str(cpf)
+        if not CPFValidator.is_valid_cpf_length(cpf=cpf_as_text):
             return False
-        first_nine_sum = CPFValidator.__sum_first_n_digits(cpf=cpf, number_of_digits=9)
-        if not CPFValidator.validate_verifier_digit(sum_of_digits=first_nine_sum, verifier_digit=cpf[9:10]):
+        first_nine_sum = CPFValidator.__sum_first_n_digits(cpf=cpf_as_text, number_of_digits=9)
+        if not CPFValidator.validate_verifier_digit(sum_of_digits=first_nine_sum, verifier_digit=cpf_as_text[9:10]):
             return False
-        first_ten_sum = CPFValidator.__sum_first_n_digits(cpf=cpf, number_of_digits=10)
-        if not CPFValidator.validate_verifier_digit(sum_of_digits=first_ten_sum, verifier_digit=cpf[-1]):
+        first_ten_sum = CPFValidator.__sum_first_n_digits(cpf=cpf_as_text, number_of_digits=10)
+        if not CPFValidator.validate_verifier_digit(sum_of_digits=first_ten_sum, verifier_digit=cpf_as_text[-1]):
             return False
         return True
 

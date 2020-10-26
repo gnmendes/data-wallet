@@ -18,11 +18,6 @@ class SQLStatements(enum.Enum):
 
 class TransactionalOps:
 
-    def __init__(self):
-        cursor = DBConfig.get_instance().cursor()
-        cursor.execute(SQLStatements.CREATE_TABLE.value)
-        DBConfig.close_cursor(cursor=cursor)
-
     @staticmethod
     def creditar_ou_debitar_valor(valor, op):
 
@@ -31,6 +26,7 @@ class TransactionalOps:
             try:
                 connection = DBConfig.get_instance()
                 cursor = connection.cursor()
+                cursor.execute(SQLStatements.CREATE_TABLE.value)
                 cursor.execute(SQLStatements.CREDITAR_OU_DEBITAR.value, (valor, op))
                 connection.commit()
                 return {'mensagem': 'Sucesso!', 'valorInserido': valor}
@@ -46,6 +42,7 @@ class TransactionalOps:
         try:
             connection = DBConfig.get_instance()
             cursor = connection.cursor()
+            cursor.execute(SQLStatements.CREATE_TABLE.value)
             cursor.execute(SQLStatements.CONSULTAR_SALDO.value)
             credito = debito = 0
             result_set = cursor.fetchall()

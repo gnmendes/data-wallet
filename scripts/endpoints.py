@@ -62,11 +62,7 @@ def mine():
     return jsonify(response), 200
 
 
-'''
-    Submeter um registro não implica, necessariamente em ele ser valido:
-    Basicamente, ele só é somado a cadeia de transações não confirmadas - quando há a mineração
-    é gerado então um bloco e esse sim é adicionado a cadeia
-'''
+''' DADOS TRANSACIONAVEIS '''
 
 
 @app.route('/chain/transactions/new', methods=['POST'])
@@ -91,37 +87,7 @@ def obtain_the_whole_chain():
     return jsonify(response), 200
 
 
-@app.route('/nodes/register', methods=['POST'])
-def register_nodes():
-    nodes = request.get_json()['nodes']
-
-    if not nodes:
-        return 'Nenhum nó submetido!'
-
-    for node in nodes:
-        bc.register_nodes(node)
-
-    response = {
-        'mensagem': 'Sucesso! Novos nós foram registrados',
-        'nodes': bc.nodes
-    }
-
-    return jsonify(response), 201
-
-
-@app.route('/nodes/resolve')
-def consensus():
-    replaced = bc.resolve_conflicts()
-    response = {'message': 'Our chain is authoritative',
-                'chain': bc.__repr__()}
-    if replaced:
-        response['message'] = 'Our chain was replaced'
-    return jsonify(response), 200
-
-
-'''
-Daqui pra baixo são endpoints relacionados aos dados não transacionaveis
-'''
+''' DADOS NÃO TRANSACIONAVEIS '''
 
 
 @app.route('/arquivo/inserir', methods=['POST'])
@@ -150,12 +116,6 @@ def remove_archive():
         return jsonify(body), get_status(body=body)
     return jsonify({'error': 'Solicitação de exclusão não inclui ids'}), 400
 
-
-"""
-Configurações para rodar local, sendo passiveis de serem omitidas
-
-**Non transactional values are inputted through those endpoints**
-"""
 
 if __name__ == '__main__':
     app.run(debug=True, port=8080)
