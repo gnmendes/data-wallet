@@ -38,7 +38,7 @@ def debitar():
 
 @app.route('/conta/saldo', methods=['GET'])
 def consultar():
-    return jsonify(TransactionalOps.consultar_saldo())
+    return jsonify(TransactionalOps.consultar_saldo()), 200
 
 
 @app.route('/chain/mine', methods=['GET'])
