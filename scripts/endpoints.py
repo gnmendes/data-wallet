@@ -19,13 +19,13 @@ def get_status(body, status_when_ok=200):
     return body['error'] if 'error' in body else status_when_ok
 
 
-@app.route('/conta/creditar', methods=['POST'])
+@app.route('/conta', methods=['POST'])
 def creditar():
     valor = request.get_json()['valor']
     return jsonify(TransactionalOps.creditar_ou_debitar_valor(valor=valor, op='C')), 200
 
 
-@app.route('/conta/debitar', methods=['DELETE'])
+@app.route('/conta', methods=['DELETE'])
 def debitar():
     valor = request.get_json()['valor']
     saldo = TransactionalOps.consultar_saldo()['saldo']
@@ -36,7 +36,7 @@ def debitar():
                              'a operação!'}), 400
 
 
-@app.route('/conta/saldo', methods=['GET'])
+@app.route('/conta', methods=['GET'])
 def consultar():
     return jsonify(TransactionalOps.consultar_saldo()), 200
 
@@ -65,7 +65,7 @@ def mine():
 ''' DADOS TRANSACIONAVEIS '''
 
 
-@app.route('/chain/transactions/new', methods=['POST'])
+@app.route('/chain', methods=['POST'])
 def new_transactions():
     register = request.get_json()
     response = {'message': 'Não foi possível identificar todos os atributos obrigatórios!'}
@@ -81,7 +81,7 @@ def new_transactions():
     return jsonify(response), 400
 
 
-@app.route('/chain/representation', methods=['GET'])
+@app.route('/chain', methods=['GET'])
 def obtain_the_whole_chain():
     response = {'chain': bc.__repr__(), 'length': len(bc.chain)}
     return jsonify(response), 200
@@ -90,25 +90,25 @@ def obtain_the_whole_chain():
 ''' DADOS NÃO TRANSACIONAVEIS '''
 
 
-@app.route('/arquivo/inserir', methods=['POST'])
+@app.route('/arquivos', methods=['POST'])
 def receive_info():
     rows_inserted = arch_ops.insert_new_files(files=request)
     return jsonify(rows_inserted), get_status(body=rows_inserted, status_when_ok=201)
 
 
-@app.route('/arquivo/listar')
+@app.route('/arquivos', methods=['GET'])
 def list_files():
     archive = arch_ops.get_files()
     return jsonify(archive), get_status(body=archive)
 
 
-@app.route('/arquivo/<id_archive>')
+@app.route('/arquivos/<id_archive>')
 def retrieve_file(id_archive):
     result = arch_ops.get_file_by_id(id_file=id_archive)
     return jsonify(result), get_status(body=result)
 
 
-@app.route('/arquivo/remove', methods=['DELETE'])
+@app.route('/arquivos', methods=['DELETE'])
 def remove_archive():
     ids = request.get_json()['ids']
     if ids:

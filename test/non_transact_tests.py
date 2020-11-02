@@ -20,7 +20,7 @@ class NonTransactTestCases(unittest.TestCase):
                                         data=self.__get_archive_mock())
         self.assertEqual(201, response.status_code, 'O código retornado deve ser 201, sinalizando que deu certo')
         self.assertIn('total de linhas inseridas', response.json['message'].lower(),
-                        "O texto deve estar contido na mensagem")
+                      "O texto deve estar contido na mensagem")
 
     def test_deve_listar_arquivos(self) -> None:
         response = self.app_client.get('/arquivo/listar')
@@ -33,11 +33,12 @@ class NonTransactTestCases(unittest.TestCase):
     def test_deve_trazer_arquivo_pelo_id(self) -> None:
         response = self.app_client.get('/arquivo/1')
         self.assertEqual(200, response.status_code, 'A resposta deve ser OK')
-        self.assertEqual(response.json[0]['nomeArquivo'], 'mock-file.json', 'O nome do último arquivo inserido deve coincidir')
+        self.assertEqual(response.json[0]['nomeArquivo'], 'mock-file.json',
+                         'O nome do último arquivo inserido deve coincidir')
         self.assertEqual(response.json[0]['idArquivo'], 1, 'O id do arquivo deve ser o mesmo')
         self.assertEqual(response.json[0]['contentType'], 'application/json', 'O content type deve ser o mesmo')
 
-    def test_deve_excluir_primeiro_arquivo(self) -> None:
+    def test_zdeve_excluir_primeiro_arquivo(self) -> None:
         response = self.app_client.delete('/arquivo/remove',
                                           data=json.dumps({'ids': [1]}),
                                           headers={'Content-Type': 'application/json'})
