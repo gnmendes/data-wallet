@@ -1,5 +1,7 @@
 from uuid import uuid4
 from flask import Flask, request, jsonify
+from flask_cors import cross_origin
+
 from scripts.blockchain.blockchain import Blockchain
 from scripts.non_transactional.non_transact_ops import FileOps
 from scripts.transactional.transact_ops import TransactionalOps
@@ -91,6 +93,7 @@ def obtain_the_whole_chain():
 
 
 @app.route('/arquivos', methods=['POST'])
+@cross_origin()
 def receive_info():
     rows_inserted = arch_ops.insert_new_files(files=request)
     return jsonify(rows_inserted), get_status(body=rows_inserted, status_when_ok=201)
