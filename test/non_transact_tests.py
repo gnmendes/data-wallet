@@ -1,11 +1,9 @@
 import io
-import os
 import json
 from time import gmtime, strftime
 import unittest
-
-os.environ.update({'database_test_name': 'dw-test.db'})
-
+from scripts.setup import Configuration
+Configuration(True)
 from scripts.endpoints import app
 
 
@@ -15,7 +13,7 @@ class NonTransactTestCases(unittest.TestCase):
         self.app_client = app.test_client()
 
     def test_deve_inserir_novos_arquivos(self) -> None:
-        response = self.app_client.post('/arquivo/inserir',
+        response = self.app_client.post('/arquivos',
                                         headers={'Content-Type': 'multipart/form-data'},
                                         data=self.__get_archive_mock())
         self.assertEqual(201, response.status_code, 'O código retornado deve ser 201, sinalizando que deu certo')
@@ -23,25 +21,15 @@ class NonTransactTestCases(unittest.TestCase):
                       "O texto deve estar contido na mensagem")
 
     def test_deve_listar_arquivos(self) -> None:
-        response = self.app_client.get('/arquivo/listar')
+        response = self.app_client.get('/arquivos')
         self.assertEqual(200, response.status_code, 'Os arquivos devem ser listados')
         self.assertIn(strftime('%Y-%m-%d', gmtime()), response.json[-1]['dataInsercao'],
                       'A data do último item inserido deve ser a de hoje')
         self.assertEqual(response.json[-1]['nomeArquivo'], 'mock-file.json', 'O nome do último arquivo inserido'
                                                                              'deve coincidir')
 
-    def test_deve_trazer_arquivo_pelo_id(self) -> None:
-        response = self.app_client.get('/arquivo/1')
-        self.assertEqual(200, response.status_code, 'A resposta deve ser OK')
-        self.assertEqual(response.json[0]['nomeArquivo'], 'mock-file.json',
-                         'O nome do último arquivo inserido deve coincidir')
-        self.assertEqual(response.json[0]['idArquivo'], 1, 'O id do arquivo deve ser o mesmo')
-        self.assertEqual(response.json[0]['contentType'], 'application/json', 'O content type deve ser o mesmo')
-
     def test_zdeve_excluir_primeiro_arquivo(self) -> None:
-        response = self.app_client.delete('/arquivo/remove',
-                                          data=json.dumps({'ids': [1]}),
-                                          headers={'Content-Type': 'application/json'})
+        response = self.app_client.delete('/arquivos/1')
         self.assertEqual(200, response.status_code, 'O arquivo de deve ter sido excluido')
         self.assertEqual(response.json[0]['nomeArquivo'], 'mock-file.json', 'O nome do arquivo excluido deve coincidir')
         self.assertEqual(response.json[0]['idArquivo'], 1, 'O id do arquivo excluido deve coincidir')

@@ -3,12 +3,6 @@ from scripts.common.database_config import DBConfig
 
 
 class SQLStatements(enum.Enum):
-    CREATE_TABLE = 'CREATE TABLE IF NOT EXISTS TB_SALDO_OPERACAO( ' \
-                   'ID_OPERACAO INTEGER PRIMARY KEY,' \
-                   'VALOR DOUBLE NOT NULL CHECK (VALOR > 0), ' \
-                   'DT_OPERACAO TIMESTAMP DEFAULT CURRENT_TIMESTAMP , ' \
-                   'TP_OPERACAO CHAR(1) CHECK (TP_OPERACAO IN ("C", "D")) )'
-
     CREDITAR_OU_DEBITAR = 'INSERT INTO TB_SALDO_OPERACAO (VALOR, TP_OPERACAO)' \
                           'VALUES' \
                           '(?, ?)'
@@ -26,7 +20,6 @@ class TransactionalOps:
             try:
                 connection = DBConfig.get_instance()
                 cursor = connection.cursor()
-                cursor.execute(SQLStatements.CREATE_TABLE.value)
                 cursor.execute(SQLStatements.CREDITAR_OU_DEBITAR.value, (valor, op))
                 connection.commit()
                 return {'mensagem': 'Sucesso!', 'valorInserido': valor}
@@ -42,7 +35,6 @@ class TransactionalOps:
         try:
             connection = DBConfig.get_instance()
             cursor = connection.cursor()
-            cursor.execute(SQLStatements.CREATE_TABLE.value)
             cursor.execute(SQLStatements.CONSULTAR_SALDO.value)
             credito = debito = 0
             result_set = cursor.fetchall()

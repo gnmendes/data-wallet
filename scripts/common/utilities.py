@@ -16,11 +16,12 @@ class Util:
         return {'error': 500, 'errorMessage': str(err)}
 
     @staticmethod
-    def question_marks_for_items(n):
-        str = '('
-        for indx in range(0, n):
-            str += '?,'
-        return str[:-1] + ')'
+    def is_valid(required, data):
+        return InputValidator.validate_input(required_parameters=required, incoming_data=data)
+
+    @staticmethod
+    def get_status(body, status_when_ok=200):
+        return body['error'] if 'error' in body else status_when_ok
 
 
 class CPFValidator:
@@ -40,12 +41,12 @@ class CPFValidator:
 
     @staticmethod
     def validate_verifier_digit(sum_of_digits, verifier_digit):
-        remain = CPFValidator.get_rest(sum=sum_of_digits)
+        remain = CPFValidator.get_rest(total=sum_of_digits)
         return remain == int(verifier_digit)
 
     @staticmethod
-    def get_rest(sum):
-        rem = sum % 11
+    def get_rest(total):
+        rem = total % 11
         if rem < 2:
             return 0
 

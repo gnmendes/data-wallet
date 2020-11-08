@@ -1,8 +1,7 @@
 import unittest
-import os
 import json
-
-os.environ.update({'database_test_name': 'dw-test.db'})
+from scripts.setup import Configuration
+Configuration(True)
 from scripts.endpoints import app
 
 
@@ -12,7 +11,7 @@ class TransactionalTestCase(unittest.TestCase):
         self.app_client = app.test_client()
 
     def test_deve_inserir_transacao_com_cpf_tipo_inteiro(self):
-        response = self.app_client.post('/chain/transactions/new',
+        response = self.app_client.post('/chain',
                                         data=json.dumps(self.__get_unconfirmed_transact()),
                                         headers={'Content-Type': 'application/json'})
         self.assertEqual(201, response.status_code,
@@ -28,7 +27,7 @@ class TransactionalTestCase(unittest.TestCase):
                                                                         'deve corresponder')
 
     def test_deve_trazer_a_representacao_cadeia(self):
-        response = self.app_client.get('/chain/representation')
+        response = self.app_client.get('/chain')
 
         self.assertEqual(200, response.status_code, 'O status deve indicar que a requisicao ocorreu OK')
         self.assertEqual(2, response.json['length'], 'O comprimento da cadeia deve corresponder')
@@ -36,10 +35,11 @@ class TransactionalTestCase(unittest.TestCase):
     @staticmethod
     def __get_unconfirmed_transact():
         return {
-            'sender': 'XPTO',
-            'recipient': 'data-wallet',
+            'sender': 36968670046,
+            'recipient': 85846492045,
             'data': {
-                'cpf': 36968670046
+                'idade':  21,
+                'nome': 'Gabriel Mendes'
             }
         }
 

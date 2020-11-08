@@ -1,49 +1,46 @@
 from uuid import uuid4
-from flask import Flask, request, jsonify
 from flask_cors import cross_origin
-
+from scripts.setup import Configuration
+from flask import Flask, request, jsonify
 from scripts.blockchain.blockchain import Blockchain
+from scripts.common.utilities import Util, CPFValidator
 from scripts.non_transactional.non_transact_ops import FileOps
 from scripts.transactional.transact_ops import TransactionalOps
-from scripts.common.utilities import InputValidator, CPFValidator
 
 app = Flask(__name__)
 bc = Blockchain()
 arch_ops = FileOps()
 node_identifier = str(uuid4()).replace('-', '.')
+Configuration()
 
-
-def _is_valid(required, data):
-    return InputValidator.validate_input(required_parameters=required, incoming_data=data)
-
-
-def get_status(body, status_when_ok=200):
-    return body['error'] if 'error' in body else status_when_ok
+''' BANCO FICTÍCIO '''
 
 
 @app.route('/conta', methods=['POST'])
-def creditar():
+@cross_origin()
+def receive_money():
     valor = request.get_json()['valor']
     return jsonify(TransactionalOps.creditar_ou_debitar_valor(valor=valor, op='C')), 200
 
 
 @app.route('/conta', methods=['DELETE'])
-def debitar():
+@cross_origin()
+def pay_bills():
     valor = request.get_json()['valor']
-    saldo = TransactionalOps.consultar_saldo()['saldo']
-
-    if valor and saldo and saldo - float(valor) > 0:
-        return jsonify(TransactionalOps.creditar_ou_debitar_valor(valor=valor, op='D')), 200
-    return jsonify({'error': 'O débito negativaria a conta, por isso não foi possível completar '
-                             'a operação!'}), 400
+    return jsonify(TransactionalOps.creditar_ou_debitar_valor(valor=valor, op='D')), 200
 
 
 @app.route('/conta', methods=['GET'])
-def consultar():
+@cross_origin()
+def check_balance():
     return jsonify(TransactionalOps.consultar_saldo()), 200
 
 
+''' DADOS TRANSACIONAVEIS '''
+
+
 @app.route('/chain/mine', methods=['GET'])
+@cross_origin()
 def mine():
     last_block = bc.get_last_block
     last_proof = last_block.proof
@@ -64,26 +61,23 @@ def mine():
     return jsonify(response), 200
 
 
-''' DADOS TRANSACIONAVEIS '''
-
-
 @app.route('/chain', methods=['POST'])
+@cross_origin()
 def new_transactions():
     register = request.get_json()
     response = {'message': 'Não foi possível identificar todos os atributos obrigatórios!'}
 
-    if _is_valid(required=['sender', 'recipient', 'data'], data=register) \
-            and _is_valid(data=register['data'], required=['cpf']):
-
-        if CPFValidator.is_cpf_valid(cpf=register['data']['cpf']):
-            index = bc.add_new_transaction(sender=register['sender'], recipient=register['recipient'],
-                                           data=register['data'])
-            response = {'message': f'Transação não confirmada adicionada! índice {index}'}
-            return jsonify(response), 201
+    if Util.is_valid(required=['sender', 'recipient', 'data'], data=register) and \
+            CPFValidator.is_cpf_valid(cpf=register['sender']) and CPFValidator.is_cpf_valid(cpf=register['recipient']):
+        index = bc.add_new_transaction(sender=register['sender'], recipient=register['recipient'],
+                                       data=register['data'])
+        response = {'message': f'Transação não confirmada adicionada! índice {index}'}
+        return jsonify(response), 201
     return jsonify(response), 400
 
 
 @app.route('/chain', methods=['GET'])
+@cross_origin()
 def obtain_the_whole_chain():
     response = {'chain': bc.__repr__(), 'length': len(bc.chain)}
     return jsonify(response), 200
@@ -94,30 +88,23 @@ def obtain_the_whole_chain():
 
 @app.route('/arquivos', methods=['POST'])
 @cross_origin()
-def receive_info():
+def receive_file():
     rows_inserted = arch_ops.insert_new_files(files=request)
-    return jsonify(rows_inserted), get_status(body=rows_inserted, status_when_ok=201)
+    return jsonify(rows_inserted), Util.get_status(body=rows_inserted, status_when_ok=201)
 
 
 @app.route('/arquivos', methods=['GET'])
+@cross_origin()
 def list_files():
     archive = arch_ops.get_files()
-    return jsonify(archive), get_status(body=archive)
+    return jsonify(archive), Util.get_status(body=archive)
 
 
-@app.route('/arquivos/<id_archive>')
-def retrieve_file(id_archive):
-    result = arch_ops.get_file_by_id(id_file=id_archive)
-    return jsonify(result), get_status(body=result)
-
-
-@app.route('/arquivos', methods=['DELETE'])
-def remove_archive():
-    ids = request.get_json()['ids']
-    if ids:
-        body = arch_ops.remove_files(ids=ids)
-        return jsonify(body), get_status(body=body)
-    return jsonify({'error': 'Solicitação de exclusão não inclui ids'}), 400
+@app.route('/arquivos/<id_archive>', methods=['DELETE'])
+@cross_origin()
+def remove_archive(id_archive):
+    body = arch_ops.remove_files(id=id_archive)
+    return jsonify(body), Util.get_status(body=body)
 
 
 if __name__ == '__main__':
