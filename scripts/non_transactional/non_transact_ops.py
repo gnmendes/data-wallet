@@ -64,7 +64,7 @@ class FileOps:
             assert id_file
             connection = DBConfig.get_instance()
             cursor = connection.cursor()
-            cursor.execute(SQLStatements.BUSCAR_ARQUIVO_POR_ID.value, id_file)
+            cursor.execute(SQLStatements.BUSCAR_ARQUIVO_POR_ID.value, [id_file])
             registers = list(cursor.fetchall())
             return self.__make_json_serializable(registers=registers)
         except Exception as error:
@@ -80,7 +80,7 @@ class FileOps:
             if 'error' not in arquivos_excluidos:
                 connection = DBConfig.get_instance()
                 cursor = connection.cursor()
-                cursor.execute(SQLStatements.DELETAR_ARQUIVOS_POR_ID.value, id)
+                cursor.execute(SQLStatements.DELETAR_ARQUIVOS_POR_ID.value, [id])
                 connection.commit()
             return arquivos_excluidos
         except Exception as error:
