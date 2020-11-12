@@ -5,17 +5,9 @@ from scripts.common.database_config import DBConfig
 
 
 class SQLStatements(enum.Enum):
-    CREATE_TABLE_ARQUIVOS_INFO = 'CREATE TABLE IF NOT EXISTS ' \
-                                 'TB_ARQUIVOS_INFO( ' \
-                                 'ID_ARQUIVO INTEGER PRIMARY KEY,' \
-                                 'NOME_ARQUIVO TEXT NOT NULL,' \
-                                 'TIPO_CONTEUDO TEXT NOT NULL,' \
-                                 'CORPO BLOB NOT NULL,' \
-                                 'DT_INSERCAO TIMESTAMP DEFAULT CURRENT_TIMESTAMP )'
-
     BUSCAR_ARQUIVOS = 'SELECT * FROM TB_ARQUIVOS_INFO'
 
-    BUSCAR_ARQUIVO_POR_ID = 'SELECT * FROM TB_ARQUIVOS_INFO WHERE ID_ARQUIVO = ?'
+    BUSCAR_ARQUIVO_POR_ID = 'SELECT * FROM TB_ARQUIVOS_INFO WHERE ID_ARQUIVO = ? '
 
     INSERIR_ARQUIVO = 'INSERT INTO TB_ARQUIVOS_INFO (NOME_ARQUIVO,' \
                       'TIPO_CONTEUDO,' \
@@ -25,12 +17,10 @@ class SQLStatements(enum.Enum):
                       '?,' \
                       ' ?)'
 
+    DELETAR_ARQUIVOS_POR_ID = 'DELETE FROM TB_ARQUIVOS_INFO WHERE ID_ARQUIVO = ? '
+
 
 class FileOps:
-    def __init__(self):
-        cursor = DBConfig.get_instance().cursor()
-        self.__create_archives_table(cursor=cursor)
-        DBConfig.close_cursor(cursor=cursor)
 
     def insert_new_files(self, files):
         files = self.__get_files(data=files)
@@ -74,7 +64,7 @@ class FileOps:
             assert id_file
             connection = DBConfig.get_instance()
             cursor = connection.cursor()
-            cursor.execute(SQLStatements.BUSCAR_ARQUIVO_POR_ID.value, id_file)
+            cursor.execute(SQLStatements.BUSCAR_ARQUIVO_POR_ID.value, [id_file])
             registers = list(cursor.fetchall())
             return self.__make_json_serializable(registers=registers)
         except Exception as error:
@@ -83,9 +73,21 @@ class FileOps:
         finally:
             DBConfig.close_cursor(cursor=cursor)
 
-    @staticmethod
-    def __create_archives_table(cursor):
-        cursor.execute(SQLStatements.CREATE_TABLE_ARQUIVOS_INFO.value)
+    def remove_files(self, id):
+        cursor = None
+        try:
+            arquivos_excluidos = self.get_file_by_id(id_file=id)
+            if 'error' not in arquivos_excluidos:
+                connection = DBConfig.get_instance()
+                cursor = connection.cursor()
+                cursor.execute(SQLStatements.DELETAR_ARQUIVOS_POR_ID.value, [id])
+                connection.commit()
+            return arquivos_excluidos
+        except Exception as error:
+            print(str(error))
+            return Util.produces_error_object(err=error)
+        finally:
+            DBConfig.close_cursor(cursor=cursor)
 
     @staticmethod
     def __make_json_serializable(registers):

@@ -3,12 +3,6 @@ from scripts.common.database_config import DBConfig
 
 
 class SQLStatements(enum.Enum):
-    CREATE_TABLE = 'CREATE TABLE IF NOT EXISTS TB_SALDO_OPERACAO( ' \
-                   'ID_OPERACAO INTEGER PRIMARY KEY,' \
-                   'VALOR DOUBLE NOT NULL CHECK (VALOR > 0), ' \
-                   'DT_OPERACAO TIMESTAMP DEFAULT CURRENT_TIMESTAMP , ' \
-                   'TP_OPERACAO CHAR(1) CHECK (TP_OPERACAO IN ("C", "D")) )'
-
     CREDITAR_OU_DEBITAR = 'INSERT INTO TB_SALDO_OPERACAO (VALOR, TP_OPERACAO)' \
                           'VALUES' \
                           '(?, ?)'
@@ -17,11 +11,6 @@ class SQLStatements(enum.Enum):
 
 
 class TransactionalOps:
-
-    def __init__(self):
-        cursor = DBConfig.get_instance().cursor()
-        cursor.execute(SQLStatements.CREATE_TABLE.value)
-        DBConfig.close_cursor(cursor=cursor)
 
     @staticmethod
     def creditar_ou_debitar_valor(valor, op):

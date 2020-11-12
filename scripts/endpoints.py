@@ -1,44 +1,46 @@
 from uuid import uuid4
+from flask_cors import cross_origin
+from scripts.setup import Configuration
 from flask import Flask, request, jsonify
 from scripts.blockchain.blockchain import Blockchain
+from scripts.common.utilities import Util, CPFValidator
 from scripts.non_transactional.non_transact_ops import FileOps
 from scripts.transactional.transact_ops import TransactionalOps
-from scripts.common.utilities import InputValidator, CPFValidator
-
 
 app = Flask(__name__)
 bc = Blockchain()
 arch_ops = FileOps()
 node_identifier = str(uuid4()).replace('-', '.')
+Configuration()
+
+''' BANCO FICTÍCIO '''
 
 
-def _is_valid(required, data):
-    return InputValidator.validate_input(required_parameters=required, incoming_data=data)
-
-
-@app.route('/conta/creditar', methods=['POST'])
-def creditar():
+@app.route('/conta', methods=['POST'])
+@cross_origin()
+def receive_money():
     valor = request.get_json()['valor']
     return jsonify(TransactionalOps.creditar_ou_debitar_valor(valor=valor, op='C')), 200
 
 
-@app.route('/conta/debitar', methods=['DELETE'])
-def debitar():
+@app.route('/conta', methods=['DELETE'])
+@cross_origin()
+def pay_bills():
     valor = request.get_json()['valor']
-    saldo = TransactionalOps.consultar_saldo()['saldo']
-
-    if valor and saldo and saldo - float(valor) > 0:
-        return jsonify(TransactionalOps.creditar_ou_debitar_valor(valor=valor, op='D')), 200
-    return jsonify({'error': 'O débito negativaria a conta, por isso não foi possível completar '
-                             'a operação!'}), 400
+    return jsonify(TransactionalOps.creditar_ou_debitar_valor(valor=valor, op='D')), 200
 
 
-@app.route('/conta/saldo', methods=['GET'])
-def consultar():
-    return jsonify(TransactionalOps.consultar_saldo())
+@app.route('/conta', methods=['GET'])
+@cross_origin()
+def check_balance():
+    return jsonify(TransactionalOps.consultar_saldo()), 200
+
+
+''' DADOS TRANSACIONAVEIS '''
 
 
 @app.route('/chain/mine', methods=['GET'])
+@cross_origin()
 def mine():
     last_block = bc.get_last_block
     last_proof = last_block.proof
@@ -59,94 +61,51 @@ def mine():
     return jsonify(response), 200
 
 
-'''
-    Submeter um registro não implica, necessariamente em ele ser valido:
-    Basicamente, ele só é somado a cadeia de transações não confirmadas - quando há a mineração
-    é gerado então um bloco e esse sim é adicionado a cadeia
-'''
-
-
-@app.route('/chain/transactions/new', methods=['POST'])
+@app.route('/chain', methods=['POST'])
+@cross_origin()
 def new_transactions():
     register = request.get_json()
     response = {'message': 'Não foi possível identificar todos os atributos obrigatórios!'}
 
-    if _is_valid(required=['sender', 'recipient', 'data'], data=register) \
-            and _is_valid(data=register['data'], required=['cpf']):
-
-        if CPFValidator.is_cpf_valid(cpf=register['data']['cpf']):
-            index = bc.add_new_transaction(sender=register['sender'], recipient=register['recipient'],
-                                           data=register['data'])
-            response = {'message': f'Transação não confirmada adicionada! índice {index}'}
-            return jsonify(response), 201
+    if Util.is_valid(required=['sender', 'recipient', 'data'], data=register) and \
+            CPFValidator.is_cpf_valid(cpf=register['sender']) and CPFValidator.is_cpf_valid(cpf=register['recipient']):
+        index = bc.add_new_transaction(sender=register['sender'], recipient=register['recipient'],
+                                       data=register['data'])
+        response = {'message': f'Transação não confirmada adicionada! índice {index}'}
+        return jsonify(response), 201
     return jsonify(response), 400
 
 
-@app.route('/chain/representation', methods=['GET'])
+@app.route('/chain', methods=['GET'])
+@cross_origin()
 def obtain_the_whole_chain():
     response = {'chain': bc.__repr__(), 'length': len(bc.chain)}
     return jsonify(response), 200
 
 
-@app.route('/nodes/register', methods=['POST'])
-def register_nodes():
-    nodes = request.get_json()['nodes']
-
-    if not nodes:
-        return 'Nenhum nó submetido!'
-
-    for node in nodes:
-        bc.register_nodes(node)
-
-    response = {
-        'mensagem': 'Sucesso! Novos nós foram registrados',
-        'nodes': bc.nodes
-    }
-
-    return jsonify(response), 201
+''' DADOS NÃO TRANSACIONAVEIS '''
 
 
-@app.route('/nodes/resolve')
-def consensus():
-    replaced = bc.resolve_conflicts()
-    response = {'message': 'Our chain is authoritative',
-                'chain': bc.__repr__()}
-    if replaced:
-        response['message'] = 'Our chain was replaced'
-    return jsonify(response), 200
-
-
-'''
-Daqui pra baixo são endpoints relacionados aos dados não transacionaveis
-'''
-
-
-@app.route('/arquivo/inserir', methods=['POST'])
-def receive_info():
+@app.route('/arquivos', methods=['POST'])
+@cross_origin()
+def receive_file():
     rows_inserted = arch_ops.insert_new_files(files=request)
-    status = rows_inserted['error'] if 'error' in rows_inserted else 201
-    return jsonify(rows_inserted), status
+    return jsonify(rows_inserted), Util.get_status(body=rows_inserted, status_when_ok=201)
 
 
-@app.route('/arquivo/listar')
+@app.route('/arquivos', methods=['GET'])
+@cross_origin()
 def list_files():
     archive = arch_ops.get_files()
-    status = archive['error'] if 'error' in archive else 200
-    return jsonify(archive), status
+    return jsonify(archive), Util.get_status(body=archive)
 
 
-@app.route('/arquivo/<id_archive>')
-def retrieve_file(id_archive):
-    result = arch_ops.get_file_by_id(id_file=id_archive)
-    status = result['error'] if 'error' in result else 200
-    return jsonify(result), status
+@app.route('/arquivos/<id_archive>', methods=['DELETE'])
+@cross_origin()
+def remove_archive(id_archive):
+    body = arch_ops.remove_files(id=id_archive)
+    return jsonify(body), Util.get_status(body=body)
 
-
-"""
-Configurações para rodar local, sendo passiveis de serem omitidas
-
-**Non transactional values are inputted through those endpoints**
-"""
 
 if __name__ == '__main__':
     app.run(debug=True, port=8080)
