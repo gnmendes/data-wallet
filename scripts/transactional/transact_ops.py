@@ -2,7 +2,7 @@ import enum
 from scripts.common.database_config import DBConfig
 
 
-class SQLStatements(enum.Enum):
+class TransactionalSQLStatements(enum.Enum):
     CREDITAR_OU_DEBITAR = 'INSERT INTO TB_SALDO_OPERACAO (VALOR, TP_OPERACAO)' \
                           'VALUES' \
                           '(?, ?)'
@@ -20,7 +20,7 @@ class TransactionalOps:
             try:
                 connection = DBConfig.get_instance()
                 cursor = connection.cursor()
-                cursor.execute(SQLStatements.CREDITAR_OU_DEBITAR.value, (valor, op))
+                cursor.execute(TransactionalSQLStatements.CREDITAR_OU_DEBITAR.value, (valor, op))
                 connection.commit()
                 return {'mensagem': 'Sucesso!', 'valorInserido': valor}
             except Exception as error:
@@ -35,7 +35,7 @@ class TransactionalOps:
         try:
             connection = DBConfig.get_instance()
             cursor = connection.cursor()
-            cursor.execute(SQLStatements.CONSULTAR_SALDO.value)
+            cursor.execute(TransactionalSQLStatements.CONSULTAR_SALDO.value)
             credito = debito = 0
             result_set = cursor.fetchall()
             for row in result_set:
