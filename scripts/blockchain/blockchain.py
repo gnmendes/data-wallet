@@ -1,9 +1,7 @@
 import json
 import random
-import requests
 from time import time
 from hashlib import sha256
-from urllib.parse import urlparse
 
 
 class Block:
@@ -26,44 +24,7 @@ class Blockchain:
     def __init__(self):
         self.chain = []
         self.current_transactions = []
-        self.nodes = set()
         self.add_new_block(proof=100, previous_hash=1)
-
-    def register_nodes(self, address):
-        url_parsed = urlparse(address)
-        self.nodes.add(url_parsed.netloc)
-
-    def valid_chain(self, chain):
-        last_block = chain[0]
-        length = len(chain)
-        for index in range(1, length):
-            block = chain[index]
-            if block.previous_hash != last_block.get_hash:
-                return False
-
-            if not self.valid_proof(last_proof=last_block['proof'],
-                                    proof=block['proof']):
-                return False
-            last_block = block
-        return True
-
-    def resolve_conflicts(self):
-        neighbours = self.nodes
-        new_chain = None
-        max_length = len(self.chain)
-
-        for node in neighbours:
-            response = requests.get('http://%s/chain' % node)
-            if response.status_code == 200:
-                chain, length = response.json()['chain'], response.json()['length']
-
-                if length > max_length and self.valid_chain(chain=chain):
-                    max_length = length
-                    new_chain = chain
-        if new_chain:
-            self.chain = new_chain
-            return True
-        return False
 
     def add_new_block(self, proof, previous_hash=None):
         block = Block(index=len(self.chain) + 1,
@@ -79,12 +40,16 @@ class Blockchain:
     def __clear_transactions(self):
         self.current_transactions = []
 
-    def add_new_transaction(self, sender, recipient, data):
-        self.current_transactions.append({
+    def add_new_transaction(self, sender, recipient, data, valor=None):
+        transaction_structure = {
             'sender': sender,
             'recipient': recipient,
             'data': data
-        })
+        }
+        if valor:
+            transaction_structure['valor'] = valor
+
+        self.current_transactions.append(transaction_structure)
         return self.get_last_block.index + 1
 
     def proof_of_work(self, last_proof):

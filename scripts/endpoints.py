@@ -69,8 +69,10 @@ def new_transactions():
 
     if Util.is_valid(required=['sender', 'recipient', 'data'], data=register) and \
             CPFValidator.is_cpf_valid(cpf=register['sender']) and CPFValidator.is_cpf_valid(cpf=register['recipient']):
+
+        valor = register['valor'] if 'valor' in register else None
         index = bc.add_new_transaction(sender=register['sender'], recipient=register['recipient'],
-                                       data=register['data'])
+                                       data=register['data'], valor=valor)
         response = {'message': f'Transação não confirmada adicionada! índice {index}'}
         return jsonify(response), 201
     return jsonify(response), 400

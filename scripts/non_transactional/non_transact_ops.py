@@ -4,7 +4,7 @@ from scripts.common.utilities import Util
 from scripts.common.database_config import DBConfig
 
 
-class SQLStatements(enum.Enum):
+class FileSQLStatements(enum.Enum):
     BUSCAR_ARQUIVOS = 'SELECT * FROM TB_ARQUIVOS_INFO'
 
     BUSCAR_ARQUIVO_POR_ID = 'SELECT * FROM TB_ARQUIVOS_INFO WHERE ID_ARQUIVO = ? '
@@ -31,7 +31,7 @@ class FileOps:
         try:
             connection = DBConfig.get_instance()
             cursor = connection.cursor()
-            cursor.executemany(SQLStatements.INSERIR_ARQUIVO.value, files_to_be_inserted)
+            cursor.executemany(FileSQLStatements.INSERIR_ARQUIVO.value, files_to_be_inserted)
             connection.commit()
             return {'message': 'Total de linhas inseridas %d' % cursor.rowcount}
         except Exception as error:
@@ -49,7 +49,7 @@ class FileOps:
         try:
             connection = DBConfig.get_instance()
             cursor = connection.cursor()
-            cursor.execute(SQLStatements.BUSCAR_ARQUIVOS.value)
+            cursor.execute(FileSQLStatements.BUSCAR_ARQUIVOS.value)
             result_set = list(cursor.fetchall())
             return self.__make_json_serializable(registers=result_set)
         except Exception as error:
@@ -64,7 +64,7 @@ class FileOps:
             assert id_file
             connection = DBConfig.get_instance()
             cursor = connection.cursor()
-            cursor.execute(SQLStatements.BUSCAR_ARQUIVO_POR_ID.value, [id_file])
+            cursor.execute(FileSQLStatements.BUSCAR_ARQUIVO_POR_ID.value, [id_file])
             registers = list(cursor.fetchall())
             return self.__make_json_serializable(registers=registers)
         except Exception as error:
@@ -80,7 +80,7 @@ class FileOps:
             if 'error' not in arquivos_excluidos:
                 connection = DBConfig.get_instance()
                 cursor = connection.cursor()
-                cursor.execute(SQLStatements.DELETAR_ARQUIVOS_POR_ID.value, [id])
+                cursor.execute(FileSQLStatements.DELETAR_ARQUIVOS_POR_ID.value, [id])
                 connection.commit()
             return arquivos_excluidos
         except Exception as error:
