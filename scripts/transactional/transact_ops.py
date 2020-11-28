@@ -3,6 +3,7 @@ from scripts.common.database_config import DBConfig
 
 
 class TransactionalSQLStatements(enum.Enum):
+
     CREDITAR_OU_DEBITAR = 'INSERT INTO TB_SALDO_OPERACAO (VALOR, TP_OPERACAO)' \
                           'VALUES' \
                           '(?, ?)'
