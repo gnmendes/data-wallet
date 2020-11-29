@@ -1,6 +1,6 @@
-<div style="display: flex; justify-content: center; align-items: center;"><h1>DATA WALLET</h1></div>
+#DATA WALLET
 
-##O QUE É?
+###O QUE É?
 
 ~~~~
 Projeto de conclusão de concurso que prevê uma estrutura
