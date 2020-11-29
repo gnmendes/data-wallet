@@ -1,9 +1,16 @@
-# DATA WALLET:
+<div style="display: flex; justify-content: center; align-items: center;"><h1>DATA WALLET</h1></div>
+
+##O QUE É?
+
 ~~~~
-Projeto de conclusão de concurso, cuja premissa é
-criar uma estrutura segura para armazenar dados, seja qual
-for o seu tipo. 
+Projeto de conclusão de concurso que prevê uma estrutura
+para armazenamento de dados, sejam estes arquivos, sejam outros tipos de dados.
 ~~~~
-~~~~
-**EM CONSTRUÇÃO! MAIS INFORMAÇÕES ACERCA DO PROJETO
-SERÃO ADICIONADAS DE ACORDO COM O SEU DESENVOLVIMENTO**
+###COMO UTILIZAR?
+
+~~~
+pip install -r requirements.txt
+~~~
+> Em seguida execute o arquivo **endpoints.py** (de preferência em modo debug, dentro da sua IDE)
+>para que seja executado o projeto.
+
