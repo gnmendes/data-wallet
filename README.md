@@ -1,12 +1,12 @@
-#DATA WALLET
+# DATA WALLET
 
-###O QUE É?
+### O QUE É?
 
 ~~~~
 Projeto de conclusão de concurso que prevê uma estrutura
 para armazenamento de dados, sejam estes arquivos, sejam outros tipos de dados.
 ~~~~
-###COMO UTILIZAR?
+### COMO UTILIZAR?
 
 ~~~
 pip install -r requirements.txt
