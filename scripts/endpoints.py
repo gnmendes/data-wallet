@@ -1,6 +1,6 @@
 from uuid import uuid4
 from flask_cors import cross_origin
-from scripts.setup import Configuration
+from scripts.initial_config import Configuration
 from flask import Flask, request, jsonify
 from scripts.blockchain.blockchain import Blockchain
 from scripts.common.utilities import Util, CPFValidator

@@ -2,7 +2,7 @@ import io
 import json
 from time import gmtime, strftime
 import unittest
-from scripts.setup import Configuration
+from scripts.initial_config import Configuration
 Configuration(True)
 from scripts.endpoints import app
 
