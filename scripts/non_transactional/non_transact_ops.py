@@ -5,19 +5,36 @@ from scripts.common.database_config import DBConfig
 
 
 class FileSQLStatements(enum.Enum):
-    BUSCAR_ARQUIVOS = 'SELECT * FROM TB_ARQUIVOS_INFO'
+    BUSCAR_ARQUIVOS = """
+        SELECT 
+            *
+        FROM
+            TB_ARQUIVOS_INFO
+    """
 
     BUSCAR_ARQUIVO_POR_ID = 'SELECT * FROM TB_ARQUIVOS_INFO WHERE ID_ARQUIVO = ? '
 
-    INSERIR_ARQUIVO = 'INSERT INTO TB_ARQUIVOS_INFO (NOME_ARQUIVO,' \
-                      'TIPO_CONTEUDO,' \
-                      'CORPO)' \
-                      'VALUES' \
-                      '(?,' \
-                      '?,' \
-                      ' ?)'
+    INSERIR_ARQUIVO = """
+        INSERT INTO TB_ARQUIVOS_INFO 
+                (
+                    NOME_ARQUIVO,
+                    TIPO_CONTEUDO,
+                    CORPO
+                )
+                VALUES
+                (
+                    ?,
+                    ?,
+                    ?
+                )
+    """
 
-    DELETAR_ARQUIVOS_POR_ID = 'DELETE FROM TB_ARQUIVOS_INFO WHERE ID_ARQUIVO = ? '
+    DELETAR_ARQUIVOS_POR_ID = """
+        DELETE FROM
+            TB_ARQUIVOS_INFO
+        WHERE
+            ID_ARQUIVO = ?
+    """
 
 
 class FileOps:
