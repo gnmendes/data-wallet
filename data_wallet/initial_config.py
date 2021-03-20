@@ -1,6 +1,6 @@
 import os
 import enum
-from scripts.common.database_config import DBConfig
+from data_wallet.common.database_config import DBConfig
 
 
 class DDL(enum.Enum):
@@ -44,4 +44,4 @@ class Configuration:
     def __setup_for_tests(is_test):
         if is_test:
             os.system('del *.db')
-            os.environ.update({'database_test_name': 'dw-test.db'})
+            os.environ.update({'database_test_name': 'dw-unittest.db'})

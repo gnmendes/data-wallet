@@ -1,11 +1,15 @@
 from uuid import uuid4
 from flask_cors import cross_origin
-from scripts.initial_config import Configuration
+from data_wallet.initial_config import Configuration
 from flask import Flask, request, jsonify
-from scripts.blockchain.blockchain import Blockchain
-from scripts.common.utilities import Util, CPFValidator
-from scripts.non_transactional.non_transact_ops import FileOps
-from scripts.transactional.transact_ops import TransactionalOps
+from data_wallet.blockchain.blockchain import Blockchain
+from data_wallet.non_transactional.non_transact_ops import FileOps
+from data_wallet.transactional.transact_ops import TransactionalOps
+from data_wallet.common.utilities import (
+    Util,
+    CPFValidator
+)
+
 
 app = Flask(__name__)
 bc = Blockchain()
@@ -69,7 +73,6 @@ def new_transactions():
 
     if Util.is_valid(required=['sender', 'recipient', 'data'], data=register) and \
             CPFValidator.is_cpf_valid(cpf=register['sender']) and CPFValidator.is_cpf_valid(cpf=register['recipient']):
-
         valor = register['valor'] if 'valor' in register else None
         index = bc.add_new_transaction(sender=register['sender'], recipient=register['recipient'],
                                        data=register['data'], valor=valor)

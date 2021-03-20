@@ -10,7 +10,11 @@ def _read_dependencies_file(file):
 
 setup(
     name=PROJECT_NAME,
-    packages=["blockchain", "common", "non_transactional", "transactional"],
+    packages=["data_wallet.blockchain",
+              "data_wallet.common",
+              "data_wallet.non_transactional",
+              "data_wallet.transactional"
+              ],
     authors=["Gabriel N. Mendes", "Karina Figueiró", "Caique Baracho"],
     authors_email=["nscbiel@gmail.com"],
     install_requires=_read_dependencies_file(file=DEPENDENCIES_FILE)

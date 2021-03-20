@@ -1,7 +1,7 @@
 import enum
 import base64
-from scripts.common.utilities import Util
-from scripts.common.database_config import DBConfig
+from data_wallet.common.utilities import Util
+from data_wallet.common.database_config import DBConfig
 
 
 class FileSQLStatements(enum.Enum):

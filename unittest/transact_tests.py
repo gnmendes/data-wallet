@@ -1,8 +1,9 @@
 import unittest
 import json
-from scripts.initial_config import Configuration
+from data_wallet.initial_config import Configuration
+
 Configuration(True)
-from scripts.endpoints import app
+from data_wallet.endpoints import app
 
 
 class TransactionalTestCase(unittest.TestCase):
@@ -38,7 +39,7 @@ class TransactionalTestCase(unittest.TestCase):
             'sender': 36968670046,
             'recipient': 85846492045,
             'data': {
-                'idade':  21,
+                'idade': 21,
                 'nome': 'Gabriel Mendes'
             }
         }

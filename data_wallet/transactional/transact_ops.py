@@ -1,5 +1,5 @@
 import enum
-from scripts.common.database_config import DBConfig
+from data_wallet.common.database_config import DBConfig
 
 
 class TransactionalSQLStatements(enum.Enum):
