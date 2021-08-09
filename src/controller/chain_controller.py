@@ -1,42 +1,16 @@
-from uuid import uuid4
+from flask import jsonify, request
 from flask_cors import cross_origin
-from scripts.initial_config import Configuration
-from flask import Flask, request, jsonify
-from scripts.blockchain.blockchain import Blockchain
-from scripts.common.utilities import Util, CPFValidator
-from scripts.non_transactional.non_transact_ops import FileOps
-from scripts.transactional.transact_ops import TransactionalOps
 
-app = Flask(__name__)
+from src.blockchain.blockchain import Blockchain
+from uuid import uuid4
+
+from src.common.utilities import Util, CPFValidator
+from src.controller import app
+
 bc = Blockchain()
-arch_ops = FileOps()
 node_identifier = str(uuid4()).replace('-', '.')
-Configuration()
 
-''' BANCO FICTÍCIO '''
-
-
-@app.route('/conta', methods=['POST'])
-@cross_origin()
-def receive_money():
-    valor = request.get_json()['valor']
-    return jsonify(TransactionalOps.creditar_ou_debitar_valor(valor=valor, op='C')), 200
-
-
-@app.route('/conta', methods=['DELETE'])
-@cross_origin()
-def pay_bills():
-    valor = request.get_json()['valor']
-    return jsonify(TransactionalOps.creditar_ou_debitar_valor(valor=valor, op='D')), 200
-
-
-@app.route('/conta', methods=['GET'])
-@cross_origin()
-def check_balance():
-    return jsonify(TransactionalOps.consultar_saldo()), 200
-
-
-''' DADOS TRANSACIONAVEIS '''
+""" DADOS TRANSACIONAVEIS """
 
 
 @app.route('/chain/mine', methods=['GET'])
@@ -83,31 +57,3 @@ def new_transactions():
 def obtain_the_whole_chain():
     response = {'chain': bc.__repr__(), 'length': len(bc.chain)}
     return jsonify(response), 200
-
-
-''' DADOS NÃO TRANSACIONAVEIS '''
-
-
-@app.route('/arquivos', methods=['POST'])
-@cross_origin()
-def receive_file():
-    rows_inserted = arch_ops.insert_new_files(files=request)
-    return jsonify(rows_inserted), Util.get_status(body=rows_inserted, status_when_ok=201)
-
-
-@app.route('/arquivos', methods=['GET'])
-@cross_origin()
-def list_files():
-    archive = arch_ops.get_files()
-    return jsonify(archive), Util.get_status(body=archive)
-
-
-@app.route('/arquivos/<id_archive>', methods=['DELETE'])
-@cross_origin()
-def remove_archive(id_archive):
-    body = arch_ops.remove_files(id=id_archive)
-    return jsonify(body), Util.get_status(body=body)
-
-
-if __name__ == '__main__':
-    app.run(debug=True, port=8080)

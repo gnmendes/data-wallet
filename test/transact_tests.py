@@ -1,8 +1,8 @@
 import unittest
 import json
-from scripts.initial_config import Configuration
+from src.initial_config import Configuration
 Configuration(True)
-from scripts.endpoints import app
+from src.endpoints import app
 
 
 class TransactionalTestCase(unittest.TestCase):

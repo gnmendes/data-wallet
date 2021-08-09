@@ -2,9 +2,9 @@ import io
 import json
 from time import gmtime, strftime
 import unittest
-from scripts.initial_config import Configuration
+from src.initial_config import Configuration
 Configuration(True)
-from scripts.endpoints import app
+from src.endpoints import app
 
 
 class NonTransactTestCases(unittest.TestCase):
